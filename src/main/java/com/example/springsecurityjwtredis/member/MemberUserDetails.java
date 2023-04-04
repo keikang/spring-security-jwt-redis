@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @Builder
 public class MemberUserDetails implements UserDetails {
 
+    private String memberId;
 
     private String username;
 
@@ -30,9 +31,10 @@ public class MemberUserDetails implements UserDetails {
     @Builder.Default
     private List<String> roles = new ArrayList<>();
 
-    public static UserDetails of(Member member){
+    public static MemberUserDetails of(Member member){
         return MemberUserDetails.builder()
-                .username(member.getMemberId())
+                .memberId(member.getMemberId())
+                .username(member.getUsername())
                 .password(member.getPassword())
                 .roles(member.getRoles())
                 .build();

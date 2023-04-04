@@ -12,4 +12,7 @@ public interface MemberRepository extends JpaRepository<Member, String> {
 
     @Query("SELECT m FROM Member m JOIN FETCH m.authorities a WHERE m.memberId = :memberId ")
     Optional<Member> findByMemberIdWithAuthorities(String memberId);
+
+    @Query("SELECT m FROM Member m JOIN FETCH m.authorities a WHERE m.username = :username ")
+    Optional<Member> findByUsernameWithAuthorities(String username);
 }

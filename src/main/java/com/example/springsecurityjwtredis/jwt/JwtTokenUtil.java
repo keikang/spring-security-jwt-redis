@@ -1,5 +1,6 @@
 package com.example.springsecurityjwtredis.jwt;
 
+import com.example.springsecurityjwtredis.member.MemberUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -34,6 +35,10 @@ public class JwtTokenUtil {
         return getClaims(token).get("username", String.class);
     }
 
+    public String getMemberId(String token){
+        return getClaims(token).get("memberId", String.class);
+    }
+
     private Key getkey(String secretKey){
         byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
@@ -44,17 +49,17 @@ public class JwtTokenUtil {
         return expiration.before(new Date());
     }
 
-    public String generateAccessToken(String memberId){
-        return generateToken(memberId, JwtExpirationEnums.ACCESS_TOKEN_EXPIRATION_TIME.getTimeValue());
+    public String generateAccessTokenByMemberId(String memberId){
+        return generateToken("memberId", memberId, JwtExpirationEnums.ACCESS_TOKEN_EXPIRATION_TIME.getTimeValue());
     }
 
-    public String generateRefreshToken(String memberId){
-        return generateToken(memberId, JwtExpirationEnums.REFRESH_TOKEN_EXPIRATION_TIME.getTimeValue());
+    public String generateRefreshTokenByMemberId(String memberId){
+        return generateToken("memberId", memberId, JwtExpirationEnums.REFRESH_TOKEN_EXPIRATION_TIME.getTimeValue());
     }
 
-    private String generateToken(String memberId, long expiretime) {
+    private String generateToken(String key, String memberId, long expiretime) {
         Claims claims = Jwts.claims();
-        claims.put("username", memberId);
+        claims.put(key, memberId);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -64,9 +69,11 @@ public class JwtTokenUtil {
                 .compact();
     }
 
-    public boolean validateToken(String token, UserDetails userDetails){
-        String userName = getUsername(token);
-        return userName.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    public boolean validateTokenByMemberId(String token, MemberUserDetails memberUserDetails){
+        String memberId = getMemberId(token);
+        System.out.println("JwtTokenUtil validateTokenByMemberId memberId : "+memberId);
+        System.out.println("JwtTokenUtil validateTokenByMemberId memberUserDetails memberId : "+memberUserDetails.getMemberId());
+        return memberId.equals(memberUserDetails.getMemberId()) && !isTokenExpired(token);
     }
 
     public long getRemainMilliSeconds(String token){

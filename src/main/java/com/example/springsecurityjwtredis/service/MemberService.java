@@ -5,6 +5,7 @@ import com.example.springsecurityjwtredis.jwt.JwtExpirationEnums;
 import com.example.springsecurityjwtredis.jwt.JwtTokenUtil;
 import com.example.springsecurityjwtredis.mapper.member.MemberResMapper;
 import com.example.springsecurityjwtredis.model.Entity.Member;
+import com.example.springsecurityjwtredis.model.redis.LogoutAccessToken;
 import com.example.springsecurityjwtredis.model.request.LoginReqDto;
 import com.example.springsecurityjwtredis.model.request.MemberReqDto;
 import com.example.springsecurityjwtredis.model.dto.TokenDto;
@@ -66,13 +67,26 @@ public class MemberService {
         if(member.isPresent()){
             Member memberResult = member.get();
             String memberId = memberResult.getMemberId();
-            String accessToken = jwtTokenUtil.generateAccessToken(memberId);
+            String accessToken = jwtTokenUtil.generateAccessTokenByMemberId(memberId);
             RefreshToken refreshToken = saveRefreshToken(memberId);
             return TokenDto.of(accessToken, refreshToken.getRefreshToken());
         }else{
             return null;
         }
 
+    }
+
+    public void logout(TokenDto tokenDto, String memberId){
+        String accessToken = getToken(tokenDto.getAcessToken());
+        System.out.println("MemberService logout accessToken : "+accessToken);
+        long remainTimeMilliseconds = jwtTokenUtil.getRemainMilliSeconds(accessToken);
+        System.out.println("MemberService logout remainTimeMilliseconds : "+remainTimeMilliseconds);
+        refreshTokenRedisRepository.deleteById(memberId);
+        logoutAccessTokenRedisRepository.save(LogoutAccessToken.of(accessToken, memberId, remainTimeMilliseconds));
+    }
+
+    public String getToken(String accessToken){
+        return accessToken.substring(7);
     }
 
     private void checkPassword(String inputPw, String memberPw) {
@@ -85,7 +99,7 @@ public class MemberService {
         System.out.println("MemberService saveRefreshToken memeberId : "+memeberId);
         return refreshTokenRedisRepository.save(
                     RefreshToken.createRefreshToken(memeberId
-                                                    , jwtTokenUtil.generateRefreshToken(memeberId)
+                                                    , jwtTokenUtil.generateRefreshTokenByMemberId(memeberId)
                                                     , JwtExpirationEnums.REFRESH_TOKEN_EXPIRATION_TIME.getTimeValue())
                 );
     }

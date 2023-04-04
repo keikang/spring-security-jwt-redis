@@ -20,9 +20,17 @@ public class MemberUserDetailService implements UserDetailsService {
     private final MemberRepository memberRepository;
 
     @Override
+    @Cacheable(value = CacheKey.USER, key = "#username", unless = "#result == null")
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        System.out.println("MemberUserDetailService loadUserByUsername memberId : "+username);
+        Member member = memberRepository.findByUsernameWithAuthorities(username)
+                .orElseThrow(() -> new NoSuchElementException("그런 회원 없습니다."));
+        return MemberUserDetails.of(member);
+    }
+
     @Cacheable(value = CacheKey.USER, key = "#memberId", unless = "#result == null")
-    public UserDetails loadUserByUsername(String memberId) throws UsernameNotFoundException {
-        System.out.println("MemberUserDetailService loadUserByUsername memberId : "+memberId);
+    public MemberUserDetails loadUserByMemberId(String memberId) throws UsernameNotFoundException {
+        System.out.println("MemberUserDetailService loadUserByMemberId memberId : "+memberId);
         Member member = memberRepository.findByMemberIdWithAuthorities(memberId)
                 .orElseThrow(() -> new NoSuchElementException("그런 회원 없습니다."));
         return MemberUserDetails.of(member);

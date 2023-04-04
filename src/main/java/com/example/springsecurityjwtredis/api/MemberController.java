@@ -35,13 +35,13 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody LoginReqDto loginReqDto){
+    public ResponseEntity<TokenDto> login(@RequestBody LoginReqDto loginReqDto){
         System.out.println("MemberController login");
         TokenDto tokenDto = memberService.login(loginReqDto);
         if(tokenDto == null){
             return ResponseEntityFactory.fail(CommonStatusType.LOGIN_FAIL, null);
         }else{
-            return ResponseEntity.ok(tokenDto);
+            return ResponseEntityFactory.ok(tokenDto);
         }
     }
 
@@ -53,9 +53,10 @@ public class MemberController {
         //return memberService.getMemberRes(memberId);
     }
 
-    @PostMapping("/logout")
+    @GetMapping("/logout")
     public void logout(@RequestHeader("Authorization") String accessToken, @RequestHeader("RefreshToken") String refreshToken){
-        String username = jwtTokenUtil.getUsername(getToken(accessToken));
+        String memberId = jwtTokenUtil.getMemberId(getToken(accessToken));
+        memberService.logout(TokenDto.of(accessToken, refreshToken), memberId);
     }
 
     public String getToken(String accessToken){

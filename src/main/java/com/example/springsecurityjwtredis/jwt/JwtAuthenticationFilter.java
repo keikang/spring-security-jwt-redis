@@ -1,5 +1,6 @@
 package com.example.springsecurityjwtredis.jwt;
 
+import com.example.springsecurityjwtredis.member.MemberUserDetails;
 import com.example.springsecurityjwtredis.model.Entity.Authority;
 import com.example.springsecurityjwtredis.model.Entity.UrlInfo;
 import com.example.springsecurityjwtredis.repository.AuthorityRepository;
@@ -53,14 +54,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String accessToken = getToken(request);
         if(accessToken != null){
             checkLogout(accessToken);
-            String username = jwtTokenUtil.getUsername(accessToken);
+            String memberId = jwtTokenUtil.getMemberId(accessToken);
             //System.out.println("JwtAuthenticationFilter doFilterInternal username : "+username);
-            if(username != null){
-                UserDetails userDetails = memberUserDetailService.loadUserByUsername(username);
+            if(memberId != null){
+                MemberUserDetails memberUserDetails = memberUserDetailService.loadUserByMemberId(memberId);
                 //System.out.println("JwtAuthenticationFilter doFilterInternal userDetails username : "+username);
-                equalsUserNameFromTokenAndUserDetails(userDetails.getUsername(), username);
-                validateAccessToken(accessToken, userDetails);
-                processSecurity(request, userDetails);
+                equalsMemberIDFromTokenAndUserDetails(memberUserDetails.getMemberId(), memberId);
+                validateAccessToken(accessToken, memberUserDetails);
+                processSecurity(request, memberUserDetails);
             }
         }
 
@@ -68,28 +69,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if(SecurityContextHolder.getContext().getAuthentication() != null){
             authentication = SecurityContextHolder.getContext().getAuthentication();
         }
-        String memberId = null;
+        MemberUserDetails memberUserDetails = null;
         if(authentication != null){
 
-            memberId = authentication.getName();
-            System.out.println("id 존재함 memberId : "+memberId);
-            List<Authority> authorityList = authorityRepository.findByMember_MemberId(memberId);
+            memberUserDetails = (MemberUserDetails) authentication.getPrincipal();
+            System.out.println("id 존재함 memberId : "+memberUserDetails.getMemberId());
+            //List<Authority> authorityList = authorityRepository.findByMember_MemberId(memberUserDetails.getMemberId());
             Optional<UrlInfo> roles = urlInfoRepository.findByUrlAddrLikeQuery(request.getRequestURI());
             //Optional<UrlInfo> roles = urlInfoRepository.findByUrlAddrLike("'\\%"+request.getRequestURI()+"\\%'");
             //Optional<UrlInfo> roles = urlInfoRepository.findByUrlAddrStartsWith("$$"+request.getRequestURI()+"$$");
-            if(memberId != null){
+            if(authentication.getAuthorities() != null){
                 System.out.println("JwtAuthenticationFilter doFilterInternal 유저");
-                authorityList.forEach(o-> System.out.println(o.getAuthority()));
+                authentication.getAuthorities().forEach(o-> System.out.println(o.getAuthority()));
                 System.out.println("JwtAuthenticationFilter doFilterInternal URL");
                 System.out.println(Arrays.toString(roles.stream().toArray()));
-                boolean result = authorityList.stream().anyMatch(o -> o.getAuthority().equals(roles.get().getUrlRole()));
+                boolean result = authentication.getAuthorities().stream().anyMatch(o -> o.getAuthority().equals(roles.get().getUrlRole()));
                 System.out.println("JwtAuthenticationFilter doFilterInternal result : "+result);
                 if(!result){
                     throw new IllegalAccessError("응 안되 돌아가");
                 }
             }
         }
-
         System.out.println("넌 자격이 있음");
 
         filterChain.doFilter(request, response);
@@ -110,16 +110,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
-    private void equalsUserNameFromTokenAndUserDetails(String memberUserDeatailName, String tokenUserName){
+    private void equalsMemberIDFromTokenAndUserDetails(String memberUserDeatailName, String tokenUserName){
         //System.out.println("JwtAuthenticationFilter equalsUserNameFromTokenAndUserDetails memberUserDeatailName : "+memberUserDeatailName);
         //System.out.println("JwtAuthenticationFilter equalsUserNameFromTokenAndUserDetails tokenUserName : "+tokenUserName);
         if(!memberUserDeatailName.equals(tokenUserName)){
-            throw new IllegalArgumentException("userName이 토큰 userName과 일치하지 않습니다.");
+            throw new IllegalArgumentException("memberId이 토큰 memberId와 일치하지 않습니다.");
         }
     }
 
-    private void validateAccessToken(String accessToken, UserDetails userDetails){
-        if(!jwtTokenUtil.validateToken(accessToken, userDetails)){
+    private void validateAccessToken(String accessToken, MemberUserDetails memberUserDetails){
+        if(!jwtTokenUtil.validateTokenByMemberId(accessToken, memberUserDetails)){
             throw new IllegalArgumentException("토근이 유효하지 않습니다.");
         }
     }

@@ -18,12 +18,15 @@ public class LogoutAccessToken {
     @Id
     private String id;
 
+    private String memberId;
+
     @TimeToLive(unit = TimeUnit.MILLISECONDS)
     private long expiration;
 
-    public static LogoutAccessToken of(String accessToken, long expiration){
+    public static LogoutAccessToken of(String accessToken, String memberId, long expiration){
         return LogoutAccessToken.builder()
                 .id(accessToken)
+                .memberId(memberId)
                 .expiration(expiration)
                 .build();
     }
