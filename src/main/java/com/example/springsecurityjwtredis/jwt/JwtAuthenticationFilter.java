@@ -1,12 +1,13 @@
 package com.example.springsecurityjwtredis.jwt;
 
 import com.example.springsecurityjwtredis.member.MemberUserDetails;
-import com.example.springsecurityjwtredis.model.Entity.Authority;
-import com.example.springsecurityjwtredis.model.Entity.UrlInfo;
-import com.example.springsecurityjwtredis.repository.AuthorityRepository;
+import com.example.springsecurityjwtredis.model.Entity.Menu;
+import com.example.springsecurityjwtredis.model.Entity.Role;
 import com.example.springsecurityjwtredis.repository.LogoutAccessTokenRedisRepository;
-import com.example.springsecurityjwtredis.repository.UrlInfoRepository;
+import com.example.springsecurityjwtredis.repository.MenuRepository;
+import com.example.springsecurityjwtredis.service.GroupService;
 import com.example.springsecurityjwtredis.service.MemberUserDetailService;
+import com.example.springsecurityjwtredis.service.RoleService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -24,10 +24,11 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -40,9 +41,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final LogoutAccessTokenRedisRepository logoutAccessTokenRedisRepository;
 
-    private final UrlInfoRepository urlInfoRepository;
+    private final MenuRepository menuRepository;
 
-    private final AuthorityRepository authorityRepository;
+    private final RoleService roleService;
+
+    private final GroupService groupService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -50,8 +53,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         System.out.println("JwtAuthenticationFilter doFilterInternal getContextPath : "+request.getContextPath());
         System.out.println("JwtAuthenticationFilter doFilterInternal getRequestURL : "+request.getRequestURL());
 
-
         String accessToken = getToken(request);
+        System.out.println("JwtAuthenticationFilter doFilterInternal accessToken : "+accessToken);
         if(accessToken != null){
             checkLogout(accessToken);
             String memberId = jwtTokenUtil.getMemberId(accessToken);
@@ -66,7 +69,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         Authentication authentication = null;
+        System.out.println("JwtAuthenticationFilter doFilterInternal accessToken : "+accessToken);
         if(SecurityContextHolder.getContext().getAuthentication() != null){
+            System.out.println("JwtAuthenticationFilter doFilterInternal getAuthentication null 아님");
             authentication = SecurityContextHolder.getContext().getAuthentication();
         }
         MemberUserDetails memberUserDetails = null;
@@ -75,18 +80,46 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             memberUserDetails = (MemberUserDetails) authentication.getPrincipal();
             System.out.println("id 존재함 memberId : "+memberUserDetails.getMemberId());
             //List<Authority> authorityList = authorityRepository.findByMember_MemberId(memberUserDetails.getMemberId());
-            Optional<UrlInfo> roles = urlInfoRepository.findByUrlAddrLikeQuery(request.getRequestURI());
+            Optional<Menu> menuRoles = menuRepository.findByMenuUrlLikeQuery(request.getRequestURI());
             //Optional<UrlInfo> roles = urlInfoRepository.findByUrlAddrLike("'\\%"+request.getRequestURI()+"\\%'");
             //Optional<UrlInfo> roles = urlInfoRepository.findByUrlAddrStartsWith("$$"+request.getRequestURI()+"$$");
             if(authentication.getAuthorities() != null){
-                System.out.println("JwtAuthenticationFilter doFilterInternal 유저");
-                authentication.getAuthorities().forEach(o-> System.out.println(o.getAuthority()));
-                System.out.println("JwtAuthenticationFilter doFilterInternal URL");
-                System.out.println(Arrays.toString(roles.stream().toArray()));
-                boolean result = authentication.getAuthorities().stream().anyMatch(o -> o.getAuthority().equals(roles.get().getUrlRole()));
+                boolean result = false;
+
+                List<String> userRoleList = authentication.getAuthorities().stream().map(o -> {
+                    return o.getAuthority();
+                }).collect(Collectors.toList());
+
+                List<String> groupRoleList = groupService.getGroupNameListByMemberId(memberUserDetails.getMemberId());
+
+
+                List<String> userGroupRoleList = new ArrayList<>();
+                userGroupRoleList.addAll(userRoleList);
+                userGroupRoleList.addAll(groupRoleList);
+
+                userGroupRoleList = userGroupRoleList.stream().distinct().collect(Collectors.toList());
+
+                System.out.println("JwtAuthenticationFilter user가 갖고 있는 Role list");
+                System.out.println(userGroupRoleList.toString());
+
+                if(userGroupRoleList.stream().anyMatch(o -> o.equals("ADMIN"))){
+                    System.out.println("JwtAuthenticationFilter doFilterInternal ADMIN 권한을 갖고 있을 경우 menu 권한체크는 생략한다.");
+                    //filterChain.doFilter(request, response);
+                    result = true;
+                }else{
+                    System.out.println("JwtAuthenticationFilter doFilterInternal ADMIN 권한이 없는 일반유저의 경우 menu Role과 비교");
+                    System.out.println("JwtAuthenticationFilter doFilterInternal menu Role");
+                    System.out.println(Arrays.toString(menuRoles.stream().toArray()));
+                    Role menuRole = roleService.getRole(menuRoles.get().getRoleId());
+
+                    result = userGroupRoleList.stream().anyMatch(o -> o.equals(menuRole.getRoleName()));
+                    //result = authentication.getAuthorities().stream().anyMatch(o -> o.getAuthority().equals(menuRole.getRoleName()));
+                }
+
                 System.out.println("JwtAuthenticationFilter doFilterInternal result : "+result);
+
                 if(!result){
-                    throw new IllegalAccessError("응 안되 돌아가");
+                    throw new IllegalAccessError("해당하는 권한을 갖고 있지 않습니다.");
                 }
             }
         }

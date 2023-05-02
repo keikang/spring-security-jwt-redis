@@ -2,8 +2,8 @@ package com.example.springsecurityjwtredis.api;
 
 import com.example.springsecurityjwtredis.model.ResponseEntityFactory;
 import com.example.springsecurityjwtredis.model.reponse.AuthorityResDto;
-import com.example.springsecurityjwtredis.model.request.UrlInfoReqDto;
-import com.example.springsecurityjwtredis.service.UrlInfoService;
+import com.example.springsecurityjwtredis.model.request.MenuReqDto;
+import com.example.springsecurityjwtredis.service.MenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/urlInfo")
-public class UrlInfoController {
+@RequestMapping("/api/v1/menu")
+public class MenuController {
 
-    private final UrlInfoService urlInfoService;
+    private final MenuService menuService;
 
-    @PostMapping("/")
-    public ResponseEntity<AuthorityResDto> saveUrlInfo(@RequestBody UrlInfoReqDto urlInfoReqDto){
-        System.out.println("UrlInfoController saveUrlInfo");
-        return ResponseEntityFactory.ok(urlInfoService.saveUrlInfo(urlInfoReqDto));
+    @PostMapping("/add")
+    public ResponseEntity<AuthorityResDto> addMenu(@RequestBody MenuReqDto menuReqDto){
+        System.out.println("MenuController addUrlInfo");
+        return ResponseEntityFactory.ok(menuService.addMenu(menuReqDto));
     }
 }

@@ -2,6 +2,7 @@ package com.example.springsecurityjwtredis.model.reponse;
 
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -16,5 +17,9 @@ public class MemberResDto {
 
     private String username;
 
-    private List<String> roles;
+    private String email;
+
+    private List<RoleResDto> roleResDtoList = new ArrayList<>();
+
+    private List<GroupResDto> groupResDtoList = new ArrayList<>();
 }

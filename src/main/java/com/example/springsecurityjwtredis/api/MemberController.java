@@ -1,5 +1,6 @@
 package com.example.springsecurityjwtredis.api;
 
+
 import com.example.springsecurityjwtredis.jwt.JwtTokenUtil;
 import com.example.springsecurityjwtredis.model.ResponseEntityFactory;
 import com.example.springsecurityjwtredis.model.dto.TokenDto;
@@ -21,17 +22,29 @@ public class MemberController {
 
     private final JwtTokenUtil jwtTokenUtil;
 
-    @GetMapping("/")
-    public String memberMain(){
-        System.out.println("MemberController saveUser");
-        return "아무 의미없는";
+    @GetMapping("/list")
+    public ResponseEntity<MemberResDto> memberList(){
+        System.out.println("MemberController memberList");
+        return ResponseEntityFactory.ok(memberService.memberList());
     }
 
-    @PostMapping("/user")
-    public ResponseEntity<MemberResDto> saveUser(@RequestBody MemberReqDto memberReqDto){
-        System.out.println("MemberController saveUser");
-        memberService.saveUser(memberReqDto);
-        return ResponseEntityFactory.ok(memberService.saveUser(memberReqDto));
+    @PostMapping("/add")
+    public ResponseEntity<MemberResDto> addMember(@RequestBody MemberReqDto memberReqDto){
+        System.out.println("MemberController addMember");
+        return ResponseEntityFactory.ok(memberService.addMember(memberReqDto));
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<MemberResDto> updateMember(@RequestBody MemberReqDto memberReqDto){
+        System.out.println("MemberController updateMember");
+        return ResponseEntityFactory.ok(memberService.updateMember(memberReqDto));
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<MemberResDto> deleteMember(@RequestBody MemberReqDto memberReqDto){
+        System.out.println("MemberController deleteMember");
+        memberService.deleteMember(memberReqDto);
+        return ResponseEntityFactory.ok(  memberReqDto.getMemberId() + "가 삭제 되었습니다.");
     }
 
     @PostMapping("/login")
@@ -39,13 +52,13 @@ public class MemberController {
         System.out.println("MemberController login");
         TokenDto tokenDto = memberService.login(loginReqDto);
         if(tokenDto == null){
-            return ResponseEntityFactory.fail(CommonStatusType.LOGIN_FAIL, null);
+            return ResponseEntityFactory.fail(CommonStatusType.LOGIN_FAIL, "");
         }else{
             return ResponseEntityFactory.ok(tokenDto);
         }
     }
 
-    @PostMapping("/getMember")
+    @PostMapping("/detail")
     public ResponseEntity<MemberResDto> getMember(@RequestBody MemberReqDto memberReqDto){
     //public MemberResDto getMember(@PathVariable String memberId){
         System.out.println("MemberController getMember");
@@ -59,8 +72,16 @@ public class MemberController {
         memberService.logout(TokenDto.of(accessToken, refreshToken), memberId);
     }
 
+    @PostMapping("/reissue")
+    public ResponseEntity<TokenDto> logout(@RequestHeader("RefreshToken") String refreshToken){
+        return ResponseEntityFactory.ok(memberService.reissueAccessToken(refreshToken));
+    }
+
     public String getToken(String accessToken){
         return accessToken.substring(7);
     }
 
+    //TODO refreshToken을 사용하여 accessToken 갱신하는 로직 필요
+
+    //TODO myinfo 같은 기능 개발 필요
 }

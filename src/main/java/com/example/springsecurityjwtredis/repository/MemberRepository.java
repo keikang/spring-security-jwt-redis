@@ -8,7 +8,9 @@ import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, String> {
 
-    //Optional<Member> findByMemberName(String memberId);
+    Optional<Member> findByMemberId(String memberId);
+
+    Optional<Member> findByMemberIdAndAndPassword(String memberId, String password);
 
     @Query("SELECT m FROM Member m JOIN FETCH m.authorities a WHERE m.memberId = :memberId ")
     Optional<Member> findByMemberIdWithAuthorities(String memberId);

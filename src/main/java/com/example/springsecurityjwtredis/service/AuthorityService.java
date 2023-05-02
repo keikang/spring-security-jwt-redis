@@ -28,8 +28,7 @@ public class AuthorityService {
     }
 
     public String deleteAuthority(AuthorityReqDto authorityReqDto){
-        //Authority authority = authorityReqMapper.toEntity(authorityReqDto);
-        authorityRepository.deleteByMemberMemberIdAndAndRole(authorityReqDto.getMemberId(), authorityReqDto.getRole());
-        return authorityReqDto.getMemberId() + " 의 " +  authorityReqDto.getRole() + "이 삭제되었습니다.";
+        authorityRepository.deleteByMemberMemberIdAndRoleRoleId(authorityReqDto.getMemberId(), authorityReqDto.getRoleId());
+        return authorityReqDto.getMemberId() + " 의 " +  authorityReqDto.getRoleId() + "이 삭제되었습니다.";
     }
 }

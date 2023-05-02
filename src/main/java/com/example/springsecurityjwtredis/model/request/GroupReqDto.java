@@ -10,18 +10,13 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MemberReqDto {
+public class GroupReqDto {
 
-    private String memberId;
+    private Long groupId;
 
-    private String password;
+    private String groupName;
 
-    private String username;
-
-    private String email;
+    private String groupDescription;
 
     List<Long> roleIdList;
-
-    List<Long> groupIdList;
-
 }

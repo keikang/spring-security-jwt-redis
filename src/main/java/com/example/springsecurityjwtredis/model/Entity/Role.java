@@ -8,15 +8,19 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @Getter
+@Setter
 @ToString
-@Table(name = "tb_url_info", schema = "public")
-public class UrlInfo {
+@Table(name = "tb_role", schema = "public")
+public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long urlid;
+    private Long roleId;
+    
+    private String roleName;
 
-    private String urlAddr;
+    private String roleDescription;
 
-    private String urlRole;
+    private String dataAccessYn;
+
 }

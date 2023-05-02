@@ -7,11 +7,11 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -78,7 +78,12 @@ public class JwtTokenUtil {
 
     public long getRemainMilliSeconds(String token){
         LocalDateTime expiration = getClaims(token).getExpiration().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
         LocalDateTime now = LocalDateTime.now();
-        return expiration.getNano() - now.getNano();
+        System.out.println("JwtTokenUtil getRemainMilliSeconds expiration : "+expiration);
+        System.out.println("JwtTokenUtil getRemainMilliSeconds now : "+now);
+        Duration duration = Duration.between(now, expiration);
+        System.out.println("JwtTokenUtil getRemainMilliSeconds duration.getSeconds() : "+duration.getSeconds());
+        return duration.getSeconds();
     }
 }

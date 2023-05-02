@@ -9,37 +9,44 @@ import org.springframework.security.core.GrantedAuthority;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @Getter
+//@ToString
 @Table(name = "tb_authority", schema = "public")
 public class Authority implements GrantedAuthority {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long authorityId;
+    private Long authorityId;
 
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
 
-    private String role;
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Group group;
 
-    private String roleDescription;
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
 
-    public static Authority ofDefault(Member member){
+    public static Authority of(Member member, Role role){
         return Authority.builder()
-                .role("DEFAULT")
+                .role(role)
                 .member(member)
                 .build();
     }
 
-    public static Authority ofAdmin(Member member){
+    public static Authority of(Group group, Role role){
         return Authority.builder()
-                //.role("ROLE_ADMIN")
-                .member(member)
+                .role(role)
+                .group(group)
                 .build();
     }
 
     @Override
     public String getAuthority() {
-        return role;
+        return role.getRoleName();
     }
+
 }

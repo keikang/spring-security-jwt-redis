@@ -8,16 +8,14 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AuthorityResDto {
+public class RoleResDto {
 
-    private String memberId;
+    private Long roleId;
 
     private String roleName;
 
-    private MemberResDto memberResDto;
-
-    private RoleResDto roleResDto;
-
     private String roleDescription;
+
+    private String dataAccessYn;
 
 }

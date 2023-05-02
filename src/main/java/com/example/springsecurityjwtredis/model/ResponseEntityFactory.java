@@ -1,6 +1,5 @@
 package com.example.springsecurityjwtredis.model;
 import com.example.springsecurityjwtredis.model.enums.CommonStatusType;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;

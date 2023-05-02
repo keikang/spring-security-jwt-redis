@@ -1,5 +1,6 @@
 package com.example.springsecurityjwtredis.api;
 
+
 import com.example.springsecurityjwtredis.model.ResponseEntityFactory;
 import com.example.springsecurityjwtredis.model.reponse.AuthorityResDto;
 import com.example.springsecurityjwtredis.model.request.AuthorityReqDto;
@@ -10,12 +11,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/v1")
 public class AuthorityController {
 
     private final AuthorityService authorityService;
 
-    @PostMapping("/")
+
+    @PostMapping("/auth")
     public ResponseEntity<AuthorityResDto> saveAuthority(@RequestBody AuthorityReqDto authorityReqDto){
         System.out.println("AuthorityController saveAuthority");
         return ResponseEntityFactory.ok(authorityService.saveAuthority(authorityReqDto));

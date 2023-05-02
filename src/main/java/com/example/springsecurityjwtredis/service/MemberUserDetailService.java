@@ -17,6 +17,8 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class MemberUserDetailService implements UserDetailsService {
 
+    private final RoleService roleService;
+
     private final MemberRepository memberRepository;
 
     @Override
@@ -25,7 +27,9 @@ public class MemberUserDetailService implements UserDetailsService {
         System.out.println("MemberUserDetailService loadUserByUsername memberId : "+username);
         Member member = memberRepository.findByUsernameWithAuthorities(username)
                 .orElseThrow(() -> new NoSuchElementException("그런 회원 없습니다."));
-        return MemberUserDetails.of(member);
+        MemberUserDetails userDetails = MemberUserDetails.of(member);
+        userDetails.setRoleNames(roleService.getRoleNameList(member.getRoleIds()));
+        return userDetails;
     }
 
     @Cacheable(value = CacheKey.USER, key = "#memberId", unless = "#result == null")
@@ -33,6 +37,9 @@ public class MemberUserDetailService implements UserDetailsService {
         System.out.println("MemberUserDetailService loadUserByMemberId memberId : "+memberId);
         Member member = memberRepository.findByMemberIdWithAuthorities(memberId)
                 .orElseThrow(() -> new NoSuchElementException("그런 회원 없습니다."));
-        return MemberUserDetails.of(member);
+        MemberUserDetails userDetails = MemberUserDetails.of(member);
+        userDetails.setRoleNames(roleService.getRoleNameList(member.getRoleIds()));
+        return userDetails;
     }
+
 }

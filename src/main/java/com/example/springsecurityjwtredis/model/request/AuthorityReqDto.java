@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Pageable;
 
 @Data
 @Builder
@@ -15,5 +16,8 @@ public class AuthorityReqDto {
 
     private String memberId;
 
-    private String role;
+    private Long roleId;
+
+    //@PageableDefault(size = 10, sort = "authority_id", direction = Sort.Direction.DESC)
+    private Pageable pageable;
 }

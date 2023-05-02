@@ -27,6 +27,16 @@ public class SecurityConfig {
 
     private final MemberUserDetailService memberUserDetailService;
 
+    private final String[] permitUrl = {
+                                        "/api/v1/auths/"
+                                        , "/api/v1/member/login"
+                                        , "/api/v1/auth"
+                                        , "/api/v1/member/add"
+                                        , "/api/v1/member/reissue"
+                                        //, "/api/v1/role/**"
+                                        //, "/api/v1/member/**"
+                                        };
+
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -39,9 +49,10 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider(){
+        System.out.println("SecurityConfig authenticationProvider");
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(memberUserDetailService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
+        //authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
     }
 
@@ -50,7 +61,7 @@ public class SecurityConfig {
         http.csrf().disable();
         http
                     .authorizeHttpRequests()
-                    .requestMatchers( "/api/v1/member/login", "/api/v1/member/logout", "/api/v1/auth", "/api/v1/member/user")
+                    .requestMatchers(permitUrl)
                         .permitAll()
                     .anyRequest()
                         .authenticated()

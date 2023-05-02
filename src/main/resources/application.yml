@@ -1,9 +1,9 @@
 
 spring:
     datasource:
-        url: jdbc:postgresql://localhost:5432/agens
-        username: agens
-        password: agens
+        url: jdbc:postgresql://localhost:8432/postgres
+        username: age
+        password: age
 
     jpa:
         #database-platform: org.hibernate.dialect.H2Dialect
@@ -14,8 +14,8 @@ spring:
         show-sql: true
         properties:
             hibernate:
-                format_sql: true
-                use_sql_comments: true
+                format_sql: false
+                use_sql_comments: false
     data:
         redis:
             host: 127.0.0.1
@@ -30,9 +30,9 @@ jwt:
 
 logging:
     level:
-        com.example.springsecurityjwtredis: trace
-        org.hibernate.SQL: debug
-        org.hibernate.type.descriptor.sql: trace
+        com.bitnine.springsecurityjwtredis: warn
+        org.hibernate.SQL: warn
+        org.hibernate.type.descriptor.sql: warn
 
 
 
