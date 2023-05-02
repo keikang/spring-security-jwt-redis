@@ -25,7 +25,7 @@ public class AuthorityController {
 
     @DeleteMapping("/")
     public ResponseEntity<String> deleteAuthority(@RequestBody AuthorityReqDto authorityReqDto){
-        System.out.println("AuthorityController deleteAuthority");
+        System.out.println("AuthorityController deleteAuthority1");
         return ResponseEntityFactory.ok(authorityService.deleteAuthority(authorityReqDto));
     }
 }
